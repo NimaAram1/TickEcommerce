@@ -1,0 +1,15 @@
+# editors' directory
+.idea
+.vscode 
+
+# virtual environment
+backend/venv
+
+# django project caches
+backend/*/__pycache__
+
+# environment values
+backend/.env
+
+# database
+backend/db.sqlite3
