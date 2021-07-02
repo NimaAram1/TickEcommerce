@@ -11,5 +11,6 @@ backend/*/__pycache__
 # environment values
 backend/.env
 
-# database
+# database & migrations
 backend/db.sqlite3
+backend/*/migrations
