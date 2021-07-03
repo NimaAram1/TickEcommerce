@@ -1,2 +1,2 @@
 # TickEcommrece!
-## status: tick still is building (in the future, we are gonna add some information here) 
+## status: tick is still building (in the future, we are gonna add some information here) 

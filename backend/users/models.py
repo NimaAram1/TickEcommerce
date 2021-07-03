@@ -3,6 +3,8 @@ from django.contrib.auth.models import AbstractBaseUser
 from django.core.validators import RegexValidator
 from django.utils import timezone
 from django.db.models import Q
+from django.core.validators import MinLengthValidator as minl, MaxLengthValidator as maxl
+from .managers import UserManager
 import datetime
 
 class User(AbstractBaseUser):
@@ -16,7 +18,7 @@ class User(AbstractBaseUser):
     last_name = models.CharField(max_length=60, verbose_name="نام خانوادگی", help_text="نام خانوادگی خود را وارد کنید", blank=True, null=True)
     birth_date = models.DateField(null=True, blank=True, verbose_name="تاریخ تولد", help_text="تاریخ تولد خود را وارد نمایید")
     phone_number_regex = RegexValidator(regex=r"^09(1[0-9]|2[0-9]|3[0-9])[0-9]{3}[0-9]{4}$")
-    phone_number = models.CharField(max_length=11, unique=True, validators=[phone_number_regex], verbose_name="شماره موبایل", help_text="شماره موبایل خود را بهمراه صفر اول آن را وارد کنید")
+    phone_number = models.CharField(max_length=11, unique=True, validators=[phone_number_regex, minl(11), maxl(11)], verbose_name="شماره موبایل", help_text="شماره موبایل خود را بهمراه صفر اول آن را وارد کنید")
     address = models.TextField(blank=True, null=True, verbose_name="آدرس منزل", help_text="آدرس منزل را در صورت تمایل وارد نمایید")
     wallet_stock = models.DecimalField(max_digits=10, decimal_places=0, default=0, verbose_name="موجودی کیف پول")
     favorite_tags = models.CharField(max_length=100, null=True, blank=True, verbose_name="تگ های مورد علاقه")
@@ -26,6 +28,7 @@ class User(AbstractBaseUser):
     is_premium = models.BooleanField(default=False, verbose_name="آیا کاربر ویژه هستید؟")
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
+    objects = UserManager()
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username", "phone_number"]
 
@@ -59,5 +62,6 @@ class User(AbstractBaseUser):
         ]
         constraints = [
             models.CheckConstraint(name="check_birth_date", check=Q(birth_date__lt=f"{datetime.date.today()}")),
+            models.CheckConstraint(name="check_phone_number", check=Q(phone_number__regex=r"^09(1[0-9]|2[0-9]|3[0-9])[0-9]{3}[0-9]{4}$")),
             models.UniqueConstraint(name="username_email_unique", fields=["username", "email"])
         ]    
