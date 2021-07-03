@@ -41,7 +41,8 @@ INSTALLED_APPS = [
 
     # third party apps
 
-    'users.apps.UsersConfig'
+    'users.apps.UsersConfig',
+    'shop.apps.ShopConfig'
 ]
 
 MIDDLEWARE = [
