@@ -7,6 +7,7 @@ backend/venv
 
 # django project caches
 backend/*/__pycache__
+backend/*/tests/__pycache__
 
 # environment values
 backend/.env

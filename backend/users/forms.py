@@ -14,7 +14,7 @@ class UserCreateFormAdmin(forms.ModelForm):
     
     class Meta:
         model = User
-        fields = "__all__"
+        fields = ["email", "username", "password", "phone_number", "repeated_password"]
 
     def clean_repeated_password(self):
         data = self.cleaned_data
