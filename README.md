@@ -1,5 +1,8 @@
-# TickEcommrece!
-## status: tick is still building (in the future, we are gonna add some information here)
-### more
-- database design(drawsql):
-  - [see](https://drawsql.app/nima-aram/diagrams/ecommrece) 
+# Tick eCommrece!
+Tick is being built, and isn't completed yet.
+## schedule and needed things to know
+| Feature | Description |
+| --- | --- |
+| shop app | The shop model was just designed and tested  |
+| users app | Users app was created (models) and tested successfully |
+[database design(drawsql):](https://drawsql.app/nima-aram/diagrams/ecommrece) 
