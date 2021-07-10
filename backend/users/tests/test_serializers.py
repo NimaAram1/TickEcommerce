@@ -16,7 +16,5 @@ class TestRegistrationSerializer(TestCase):
             User.objects.get(username=serialized_user.data["username"]), user, "Serializer didn't work")
         self.assertEqual(
             serialized_user.data["email"], "test@example.com", "Serializer didn't work")
-        self.assertNotEqual(
-            serialized_user.data["password"], "testbadtest", "Serializer didn't work")
         self.assertEqual(
             serialized_user.data["phone_number"], "09128007000", "Serializer didn't work")        
