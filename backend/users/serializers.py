@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 class RegisterationSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=True, help_text='یک رمز عبور امن وارد نمایید')
     repeated_password = serializers.CharField(write_only=True, required=True, help_text="تایید رمز عبور خود را وارد نمایید")
     class Meta:
         model = User
