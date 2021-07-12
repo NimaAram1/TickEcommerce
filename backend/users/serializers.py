@@ -1,4 +1,4 @@
-from rest_framework import fields, serializers
+from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
@@ -20,10 +20,6 @@ class RegisterationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("رمز عبور و تایید آن باید یکی باشد")
         return data
 
-    def create(self, validated_data):
-        validated_data["password"] = make_password(validated_data.get("password"))
-        return super(RegisterationSerializer, self).create(validated_data) 
-
 class LoginSerializerViaEmail(serializers.ModelSerializer):
     email = serializers.EmailField(write_only=True, max_length=220, min_length=6, help_text="ایمیل خود را وارد نمایید")
     password = serializers.CharField(write_only=True, required=True, help_text='رمز عبور خود را وارد نمایید') 
@@ -35,7 +31,7 @@ class LoginSerializerViaEmail(serializers.ModelSerializer):
         email = data["email"]
         password = data["password"]
         user = authenticate(email=email, password=password)
-        
+    
         if not user:
             raise AuthenticationFailed("رمز عبور یا ایمیل شما صحیح نمی باشد.")
 
