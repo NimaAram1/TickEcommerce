@@ -10,6 +10,7 @@ class TestUserCreateAdminForm(TestCase):
         form = UserCreateFormAdmin(data={"email":"test50@example.com", "username":"test", "phone_number":"09125008000", "password":"superpassword2000", "repeated_password":"superpassword2000"})
         self.assertTrue(form.is_valid())
 
+
     def test_invalid_data_user_create(self):
         form = UserCreateFormAdmin(data={})
         self.assertFalse(form.is_valid())
@@ -20,6 +21,7 @@ class TestUserChangeAdminForm(TestCase):
         user_object = User.objects.create_user(email="test@example.com", username="test", password="superpassword", phone_number="09226008000")
         form = UserChangeFormAdmin(instance=user_object)
         self.assertTrue(form.is_valid)
+
 
     def test_invalid_data_user_change(self):
         form = UserChangeFormAdmin(data={"email":"test@example.com", "password":"superpassword", "phone_number":"09226008000"})
