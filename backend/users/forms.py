@@ -1,4 +1,5 @@
 from django import forms
+from django.utils.text import gettext_lazy as _
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 
@@ -9,8 +10,8 @@ class UserCreateFormAdmin(forms.ModelForm):
     """
     The form we can create user in admin panel
     """
-    password = forms.CharField(widget=forms.PasswordInput, label="رمز عبور")
-    repeated_password = forms.CharField(widget=forms.PasswordInput, label="تایید رمز عبور")
+    password = forms.CharField(widget=forms.PasswordInput, label=_("Password"))
+    repeated_password = forms.CharField(widget=forms.PasswordInput, label=_("Confirm password"))
     
     class Meta:
         model = User
@@ -19,7 +20,7 @@ class UserCreateFormAdmin(forms.ModelForm):
     def clean_repeated_password(self):
         data = self.cleaned_data
         if data["password"] and data["repeated_password"] and data["password"] != data["repeated_password"]:
-            raise forms.ValidationError("رمز و تایید آن باید یکی باشد")
+            raise forms.ValidationError(_("Password and repeated password must be the same"))
         return data["repeated_password"] 
 
     def save(self, commit=False):

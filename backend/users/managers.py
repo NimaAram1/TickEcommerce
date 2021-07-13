@@ -1,4 +1,5 @@
 from django.contrib.auth.models import BaseUserManager
+from django.utils.text import gettext_lazy as _
 
 class UserManager(BaseUserManager):
     """
@@ -9,11 +10,11 @@ class UserManager(BaseUserManager):
 
     def create_user(self, email, username, password, phone_number):
         if not email:
-            raise ValueError("در ساخت حساب ایمیل خود را وارد نمایید")
+            raise ValueError(_("If you want to create an account, You must enter an email."))
         elif not username:
-            raise ValueError("در ساخت حساب نام کاربری خود را وارد نمایید")
+            raise ValueError(_("If you want to create an account, You must enter a username."))
         elif not phone_number:
-            raise ValueError("شماره تلفن خود را میبایستی وارد نمایید")
+            raise ValueError(_("If you want to create an account, You must enter a phone number."))
             
         user = self.model(email=self.normalize_email(email), username=username, phone_number=phone_number)
         user.set_password(password)
