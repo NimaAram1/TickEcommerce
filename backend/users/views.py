@@ -4,10 +4,12 @@ from rest_framework.generics import GenericAPIView
 from django.contrib.auth import get_user_model
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.permissions import IsAuthenticated
 from .serializers import (
     RegisterationSerializer,
     LoginSerializerViaEmail,
-    LoginSerializerViaPhoneNumber
+    LoginSerializerViaPhoneNumber,
+    LogoutSerializer
 )   
 
 # getting user model
@@ -24,15 +26,17 @@ class RegisterationApiView(APIView):
             if data.is_valid():
                 User.objects.create_user(email=data.validated_data["email"], username=data.validated_data["username"],
                 password=data.validated_data["password"], phone_number=data.validated_data["phone_number"])
+                
                 return Response({
-                "message": f'اکانت {data.validated_data["email"]} با موفقیت ساخته شد'
-                })
+                "message": f'{data.validated_data["email"]} account created successfully'
+                }, status=status.HTTP_201_CREATED)
+            
             else:
-                return Response(data.errors)
+                return Response(data.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({
-                "message": "شما از قبل احراز هویت کرده اید"
-            })            
+                "message": "You already authorized"
+            }, status=status.HTTP_400_BAD_REQUEST)            
 
 class LoginViaEmailApiView(GenericAPIView):
     """
@@ -40,6 +44,7 @@ class LoginViaEmailApiView(GenericAPIView):
     generate access and refresh token for user 
     """
     serializer_class = LoginSerializerViaEmail
+
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -47,6 +52,7 @@ class LoginViaEmailApiView(GenericAPIView):
         password = serializer.validated_data["password"]
         user = authenticate(email=email, password=password)
         tokens = RefreshToken.for_user(user)
+
         return Response({
             "access": str(tokens.access_token),
             "refresh": str(tokens)
@@ -58,6 +64,7 @@ class LoginViaPhoneNumberApiView(GenericAPIView):
     generate access and refresh token for user 
     """
     serializer_class = LoginSerializerViaPhoneNumber
+
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True) 
@@ -66,7 +73,23 @@ class LoginViaPhoneNumberApiView(GenericAPIView):
         user_instance = User.objects.get(phone_number=phone_number)
         user = authenticate(email=user_instance.email, password=password)
         tokens = RefreshToken.for_user(user)
+
         return Response({
             "access": str(tokens.access_token),
             "refresh": str(tokens)
         }, status=status.HTTP_200_OK)
+
+class LogoutApiView(GenericAPIView):
+    """
+    Get refresh token from the user(without user knows) and blacklist his key
+    for logout  
+    """
+    serializer_class = LogoutSerializer
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)

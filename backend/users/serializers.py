@@ -4,6 +4,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
 from django.core.validators import RegexValidator
 from rest_framework.exceptions import AuthenticationFailed
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 
 # getting user model
 User = get_user_model()
@@ -61,3 +62,20 @@ class LoginSerializerViaPhoneNumber(serializers.ModelSerializer):
             raise AuthenticationFailed("اکانت شما غیر فعال شده است")
 
         return super().validate(data)
+
+class LogoutSerializer(serializers.Serializer):
+    refresh = serializers.CharField(write_only=True, required=True, help_text="Enter your refresh key for logout")
+    
+    default_error_messages = {
+        "bad token": "Your token doesn't valid"
+    }
+    
+    def validate(self, data):
+        self.token = data["refresh"]
+        return data
+
+    def save(self, **kwargs):
+        try:
+            RefreshToken(self.token).blacklist() 
+        except TokenError:
+            self.fail("bad token")
