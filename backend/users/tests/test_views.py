@@ -10,7 +10,7 @@ User = get_user_model()
 
 class AuthenticationTests(APITestCase):
     def setUp(self):
-        login_user_via_email_url = reverse("users:loginViaEmail")
+        login_user_via_email_url = reverse("users:login_via_email")
         login_user_via_email_data = {
             "email": "online@example.com",
             "password": "superpowerfulpassword"
@@ -37,7 +37,7 @@ class AuthenticationTests(APITestCase):
         self.assertEqual(registeration_response.status_code, status.HTTP_201_CREATED)
 
     def test_login_via_email(self):
-        login_via_email_url = reverse("users:loginViaEmail")
+        login_via_email_url = reverse("users:login_via_email")
         login_via_email_data = {
             "email": "online@example.com",
             "password": "superpowerfulpassword"
@@ -49,7 +49,7 @@ class AuthenticationTests(APITestCase):
         self.assertEqual(login_via_email_response.status_code, status.HTTP_200_OK)
 
     def test_login_via_phone_number(self):
-        login_via_phone_url = reverse("users:loginViaPhoneNumber")
+        login_via_phone_url = reverse("users:login_via_phoneNumber")
         login_via_phone_data = {
             "phone_number": "09335008000",
             "password": "superpowerfulpassword"

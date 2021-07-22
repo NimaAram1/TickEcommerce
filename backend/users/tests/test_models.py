@@ -31,23 +31,17 @@ class UsersModelTests(TestCase):
         self.assertEqual(user.is_admin, True)
 
     def test_create_user_with_same_email_and_username(self):
-        user = User.objects.create_user(email="test3@example.com", username="test3@example.com", password="test3", phone_number="09335689898")
+        user = User.objects.return_user_intance(email="test3@example.com", username="test3@example.com", password="test3", phone_number="09335689898")
 
         # testing part
 
-        try:
-            with self.assertRaises(IntegrityError):
-                user.save()
-        except:
-            print("Sqlite doesn't support constraints, try with Postgresql")
+        with self.assertRaises(IntegrityError):
+            user.save()
 
     def test_create_user_wrong_phone(self):
-        user = User.objects.return_user_intance(email="test4@example.com", username="test4", password="test4", phone_number="93356898")
+        user = User.objects.return_user_intance(email="test4@example.com", username="test4", password="test4", phone_number="9335689")
         
         # testing part  
 
-        try:
-            with self.assertRaises(IntegrityError):
-                user.save()
-        except:
-            print("Sqlite doesn't support constraints, try with Postgresql")                            
+        with self.assertRaises(IntegrityError):
+            user.save()                           

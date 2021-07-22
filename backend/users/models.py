@@ -1,9 +1,10 @@
+from enum import unique
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser
 from django.core.validators import RegexValidator
 from django.utils.text import gettext_lazy as _
 from django.utils import timezone
-from django.db.models import Q
+from django.db.models import Q, F
 from django.core.validators import MinLengthValidator as minl, MaxLengthValidator as maxl
 from .managers import UserManager
 import datetime
@@ -64,5 +65,5 @@ class User(AbstractBaseUser):
         constraints = [
             models.CheckConstraint(name="check_birth_date", check=Q(birth_date__lt=f"{datetime.date.today()}")),
             models.CheckConstraint(name="check_phone_number", check=Q(phone_number__regex=r"^09(1[0-9]|2[0-9]|3[0-9])[0-9]{3}[0-9]{4}$")),
-            models.UniqueConstraint(name="username_email_unique", fields=["username", "email"])
+            models.CheckConstraint(name="check_username_email_unique", check=~Q(username=F('email')))
         ]    

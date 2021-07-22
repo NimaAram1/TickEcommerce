@@ -14,7 +14,7 @@ class UserAdmin(BaseAdmin):
     list_filter = ["is_admin", "is_premium"]
     fieldsets = (
         (None, {"fields":["email", "username", "first_name", "last_name"]}),
-        ("اطلاعات بیشتر", {"fields":["birth_date", "phone_number", "address", "wallet_stock"]}),
+        ("اطلاعات بیشتر", {"fields":["birth_date", "phone_number", "address", "wallet_stock", "favorite_tags"]}),
         ("اطلاعات شخصی و دسترسی ها", {"fields":["password", "is_admin", "is_active"]})
     )
     add_fieldsets = (
