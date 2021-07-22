@@ -3,17 +3,31 @@ from rest_framework.views import APIView, Response
 from rest_framework.generics import GenericAPIView
 from django.contrib.auth import get_user_model
 from django.contrib.auth import authenticate
+from django.utils.text import gettext_lazy as _
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 from .serializers import (
     RegisterationSerializer,
     LoginSerializerViaEmail,
     LoginSerializerViaPhoneNumber,
-    LogoutSerializer
-)   
+    LogoutSerializer,
+    ResetPasswordSerializer,
+    SetNewPasswordSerializer
+) 
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.encoding import smart_str, force_str, smart_bytes, DjangoUnicodeDecodeError
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.http import HttpResponsePermanentRedirect
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from rest_framework.reverse import reverse
+from .utils import Tools
+from decouple import config
 
 # getting user model
 User = get_user_model()
+
+class CustomRedirect(HttpResponsePermanentRedirect):
+    allowed_schemes = ['http', 'https']
 
 class RegisterationApiView(APIView):
     """
@@ -43,6 +57,7 @@ class LoginViaEmailApiView(GenericAPIView):
     Get email and password and authenticate user with those, Then
     generate access and refresh token for user 
     """
+
     serializer_class = LoginSerializerViaEmail
 
     def post(self, request):
@@ -63,6 +78,7 @@ class LoginViaPhoneNumberApiView(GenericAPIView):
     Get phone number and password and authenticate user with those, Then
     generate access and refresh token for user 
     """
+
     serializer_class = LoginSerializerViaPhoneNumber
 
     def post(self, request):
@@ -84,6 +100,7 @@ class LogoutApiView(GenericAPIView):
     Get refresh token from the user(without user knows) and blacklist his key
     for logout  
     """
+
     serializer_class = LogoutSerializer
     permission_classes = [IsAuthenticated]
 
@@ -93,3 +110,86 @@ class LogoutApiView(GenericAPIView):
         serializer.save()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+class ResetPasswordApiView(APIView):
+    """
+    Get account's email from user and send a reset password link
+    for user's email
+    """
+    def post(self, request):
+        serializer = ResetPasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            email = request.data["email"]
+    
+            if User.objects.filter(email=email).exists():
+                user = User.objects.get(email=email)
+                uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
+                token = PasswordResetTokenGenerator().make_token(user)
+                current_site = get_current_site(request=request).domain
+                relative_link = reverse("users:reset_password_confirm", kwargs={"uidb64": uidb64, "token": token})
+                absurl = "http://" + current_site + relative_link
+                email_body = _("Dear ") + user.username + _(", \nUse link below to reset your password \n") + absurl
+                email_context = {"email_body": email_body, "to_email": [user.email], "email_subject": _("Reset your password")}
+            
+                Tools.send_email(email_context)
+
+                return Response({
+                    "success": _("We have sent you a link that you can reset your password with it")
+                }, status=status.HTTP_200_OK)
+            else:
+                return Response({
+                    "message": _("Your email did not exist in our records")
+                })     
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)       
+
+class CheckPasswordTokenApiView(GenericAPIView):
+    """
+    Open reset link and check that; If it is valid
+    redirect user to reset password confirm view
+    """
+
+    serializer_class = SetNewPasswordSerializer
+
+    def get(self, request, uidb64, token):
+        redirect_url = request.GET.get('redirect_url', '')
+
+        try:
+            id = smart_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(id=id)
+
+            if not PasswordResetTokenGenerator().check_token(user, token):
+                if len(redirect_url) > 3:
+                    return CustomRedirect(redirect_url + "?token_valid=False")
+                else:
+                    return CustomRedirect(config("FRONTEND_URL") + "?token_valid=False")    
+            
+            if redirect_url and len(redirect_url) > 3:
+                return CustomRedirect(redirect_url + "?token_valid=?token_valid=True&message=CredentialsValid&uidb64=" + uidb64 + "&token=" + token)
+            else:
+                return CustomRedirect(config("FRONTEND_URL") + "?token_valid=False")  
+
+        except DjangoUnicodeDecodeError as error:
+                try:
+                    if not PasswordResetTokenGenerator().check_token(user):
+                        return CustomRedirect(redirect_url + "?token_valid=False")
+                except UnboundLocalError:
+                    return Response({
+                        "error": _("Token is not valid, Please request new one.")
+                    },  status=status.HTTP_400_BAD_REQUEST)          
+
+class SetNewPasswordApiView(GenericAPIView):
+    """
+    Get password, repeated_password, token, and uidb64
+    and reset user's password
+    """
+
+    serializer_class = SetNewPasswordSerializer
+
+    def patch(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        return Response({
+            "success": _("Password reset success")
+        }, status=status.HTTP_200_OK)                    
