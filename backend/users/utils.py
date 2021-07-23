@@ -1,4 +1,4 @@
-from django.core.mail import EmailMessage, send_mail
+from django.core.mail import EmailMessage
 import threading
 
 class EmailThread(threading.Thread):
